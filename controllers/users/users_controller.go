@@ -1,30 +1,30 @@
 package users
 
 import (
-	"encoding/json"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/Kento75/bookstore_users-api/domain/users"
+	"github.com/Kento75/bookstore_users-api/services"
+	"github.com/Kento75/bookstore_users-api/utils/errors"
 	"github.com/gin-gonic/gin"
 )
 
 func CreateUser(c *gin.Context) {
 	var user users.User
-	bytes, err := ioutil.ReadAll(c.Request.Body)
 
-	if err != nil {
-		// TODO: handler error
+	if err := c.ShouldBindJSON(&user); err != nil {
+		restErr := errors.BadRequestError("invalid json body")
+		c.JSON(restErr.Status, restErr)
 		return
 	}
 
-	// jsonをパース
-	if err := json.Unmarshal(bytes, &user); err != nil {
-		// TODO: handler error
+	result, saveErr := services.CreateUser(user)
+	if saveErr != nil {
+		c.JSON(saveErr.Status, saveErr)
 		return
 	}
 
-	c.String(http.StatusNotImplemented, "Implement me !")
+	c.JSON(http.StatusCreated, result)
 }
 
 func GetUser(c *gin.Context) {
