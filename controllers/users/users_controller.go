@@ -2,6 +2,7 @@ package users
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/Kento75/bookstore_users-api/domain/users"
 	"github.com/Kento75/bookstore_users-api/services"
@@ -28,5 +29,18 @@ func CreateUser(c *gin.Context) {
 }
 
 func GetUser(c *gin.Context) {
-	c.String(http.StatusNotImplemented, "Implement me !")
+	userId, userErr := strconv.ParseInt(c.Param("user_id"), 10, 64)
+
+	if userErr != nil {
+		err := errors.BadRequestError("invalid user id")
+		c.JSON(err.Status, err)
+		return
+	}
+
+	user, getErr := services.GetUser(userId)
+	if getErr != nil {
+		c.JSON(getErr.Status, getErr)
+	}
+
+	c.JSON(http.StatusOK, user)
 }
