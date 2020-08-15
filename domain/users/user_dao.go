@@ -3,6 +3,7 @@ package users
 import (
 	"fmt"
 
+	"github.com/Kento75/bookstore_users-api/utils/date_utils"
 	"github.com/Kento75/bookstore_users-api/utils/errors"
 )
 
@@ -44,6 +45,9 @@ func (user *User) Save() *errors.RestErr {
 		return errors.BadRequestError(fmt.Sprintf("user %d already exists", user.Id))
 	}
 
+	user.DateCreated = date_utils.GetNowString()
+
 	usersDB[user.Id] = user
+
 	return nil
 }
