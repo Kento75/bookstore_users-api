@@ -2,10 +2,16 @@ package users
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/Kento75/bookstore_users-api/datasources/mysql/users_db"
 	"github.com/Kento75/bookstore_users-api/utils/date_utils"
 	"github.com/Kento75/bookstore_users-api/utils/errors"
+)
+
+const (
+	indexUniqueEmail = "email_UNIQUE"
+	queryInsertUser  = "INSERT INTO users(first_name, last_name, email, date_created) VALUES(?,?,?,?);"
 )
 
 var (
@@ -42,17 +48,31 @@ func (user *User) Get() *errors.RestErr {
 }
 
 func (user *User) Save() *errors.RestErr {
-	current := usersDB[user.Id]
-	if current != nil {
-		if current.Email == user.Email {
-			return errors.BadRequestError(fmt.Sprintf("email %s already registered", user.Email))
-		}
-		return errors.BadRequestError(fmt.Sprintf("user %d already exists", user.Id))
+	stmt, err := users_db.Client.Prepare(queryInsertUser)
+	if err != nil {
+		return errors.InternalServerError(err.Error())
 	}
+	defer stmt.Close()
 
 	user.DateCreated = date_utils.GetNowString()
 
-	usersDB[user.Id] = user
+	// first_name, last_name, email, date_created
+	insertResult, err := stmt.Exec(user.FirstName, user.LastName, user.Email, user.DateCreated)
+	if err != nil {
+		// 一意制約違反の場合
+		if strings.Contains(err.Error(), indexUniqueEmail) {
+			return errors.BadRequestError(fmt.Sprintf("email %s already exists", user.Email))
+		}
+		return errors.InternalServerError(fmt.Sprintf("error when trying to save user: %s", err.Error()))
+	}
+
+	userId, err := insertResult.LastInsertId()
+
+	if err != nil {
+		return errors.InternalServerError(fmt.Sprintf("error when trying to save user: %s", err.Error()))
+	}
+
+	user.Id = userId
 
 	return nil
 }
