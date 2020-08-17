@@ -51,13 +51,13 @@ func (user *User) Save() *errors.RestErr {
 	// first_name, last_name, email, date_created
 	insertResult, saveErr := stmt.Exec(user.FirstName, user.LastName, user.Email, user.DateCreated)
 	if saveErr != nil {
-		mysql_utils.ParseError(saveErr)
+		return mysql_utils.ParseError(saveErr)
 	}
 
 	userId, err := insertResult.LastInsertId()
 
 	if err != nil {
-		mysql_utils.ParseError(saveErr)
+		return mysql_utils.ParseError(saveErr)
 	}
 
 	user.Id = userId
