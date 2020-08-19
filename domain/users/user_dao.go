@@ -12,6 +12,7 @@ import (
 const (
 	queryInsertUser = "INSERT INTO users(first_name, last_name, email, date_created) VALUES(?,?,?,?);"
 	queryGetUser    = "SELECT id, first_name, last_name, email, date_created FROM users WHERE id=?;"
+	queryUpdateUser = "UPDATE users SET first_name=?, last_name=?, email=? WHERE id=?;"
 )
 
 func something() {
@@ -62,5 +63,19 @@ func (user *User) Save() *errors.RestErr {
 
 	user.Id = userId
 
+	return nil
+}
+
+func (user *User) Update() *errors.RestErr {
+	stmt, err := users_db.Client.Prepare(queryUpdateUser)
+	if err != nil {
+		return errors.InternalServerError(err.Error())
+	}
+	defer stmt.Close()
+
+	_, updateErr := stmt.Exec(user.FirstName, user.LastName, user.Email, user.Id)
+	if updateErr != nil {
+		return mysql_utils.ParseError(updateErr)
+	}
 	return nil
 }
