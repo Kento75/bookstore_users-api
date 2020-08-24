@@ -4,5 +4,7 @@ CREATE TABLE `users_db`.`users` (
   `last_name` VARCHAR(45) NULL,
   `email` VARCHAR(45) NOT NULL,
   `date_created` VARCHAR(45) NULL,
+  `status` varchar(45) NOT NULL,
+  `password` varchar(32) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `email_UNIQUE` (`email` ASC));
