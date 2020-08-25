@@ -2,6 +2,7 @@ package services
 
 import (
 	"github.com/Kento75/bookstore_users-api/domain/users"
+	"github.com/Kento75/bookstore_users-api/utils/date_utils"
 	"github.com/Kento75/bookstore_users-api/utils/errors"
 )
 
@@ -21,16 +22,14 @@ func CreateUser(user users.User) (*users.User, *errors.RestErr) {
 	if err := user.Validate(); err != nil {
 		return nil, err
 	}
-
+	// "active"
+	user.Status = users.StatusActive
+	user.DateCreated = date_utils.GetNowDbFormat()
 	if err := user.Save(); err != nil {
 		return nil, err
 	}
 
 	return &user, nil
-}
-
-func FindUser() {
-
 }
 
 func UpdateUser(isPartial bool, user users.User) (*users.User, *errors.RestErr) {
