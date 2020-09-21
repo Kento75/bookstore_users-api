@@ -17,4 +17,6 @@ func mapUrls() {
 
 	// internal
 	router.GET("/internal/users/search", users.Search)
+	// login
+	router.POST("/users/login", users.Login)
 }
